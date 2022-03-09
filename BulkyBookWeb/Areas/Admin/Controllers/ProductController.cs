@@ -105,7 +105,6 @@ namespace BulkyBookWeb.Controllers
         }
 
         [HttpDelete]
-        [ValidateAntiForgeryToken]
         public IActionResult Delete(int? id)
         {
             var obj = _unitOfWork.Product.GetFirstOrDefault(u=>u.Id==id);
@@ -117,7 +116,6 @@ namespace BulkyBookWeb.Controllers
             var oldImagePath = Path.Combine(_hostEnvironment.WebRootPath, obj.ImageUrl.TrimStart('\\'));
             if (System.IO.File.Exists(oldImagePath))
                 System.IO.File.Delete(oldImagePath);
-
 
             _unitOfWork.Product.Remove(obj);
             _unitOfWork.Save();
