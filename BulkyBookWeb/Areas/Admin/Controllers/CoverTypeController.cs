@@ -48,7 +48,7 @@ namespace BulkyBookWeb.Controllers
 
             var coverTypeFromDbFirst = _unitOfWork.CoverType.GetFirstOrDefault(u => u.Id == id);
             if (coverTypeFromDbFirst == null)
-                NotFound();
+                return NotFound();
             return View(coverTypeFromDbFirst);
         }
 
