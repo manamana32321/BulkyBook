@@ -13,6 +13,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
     public class CartController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        [BindProperty]
         public ShoppingCartVM ShoppingCartVM { get; set; }
         public int MyProperty { get; set; }
         public CartController(IUnitOfWork unitOfWork)
@@ -98,6 +99,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             }
             return View(ShoppingCartVM);
         }
+
         [HttpPost]
         [ActionName("Summary")]
         [ValidateAntiForgeryToken]
@@ -123,6 +125,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             }
 
             _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+            _unitOfWork.Save();
             foreach (var cart in ShoppingCartVM.ListCart)
             {
                 OrderDetail orderDetail = new()
@@ -133,6 +136,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
                     Count = cart.Count,
                 };
                 _unitOfWork.OrderDetail.Add(orderDetail);
+                _unitOfWork.Save();
             }
 
             _unitOfWork.ShoppingCart.RemoveRange(ShoppingCartVM.ListCart);
