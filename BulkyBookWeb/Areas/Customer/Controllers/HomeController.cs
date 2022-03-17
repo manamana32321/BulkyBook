@@ -11,17 +11,17 @@ namespace BulkyBookWeb.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IUnitOfWork _unitOfWOrk;
+        private readonly IUnitOfWork _unitOfWork;
 
         public HomeController(ILogger<HomeController> logger, IUnitOfWork unitOfWork)
         {
             _logger = logger;
-            _unitOfWOrk = unitOfWork;
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
         {
-            IEnumerable<Product> productList = _unitOfWOrk.Product.GetAll(includeProperties:"Category,CoverType");
+            IEnumerable<Product> productList = _unitOfWork.Product.GetAll(includeProperties:"Category,CoverType");
 
             return View(productList);
         }
@@ -32,7 +32,7 @@ namespace BulkyBookWeb.Controllers
             {
                 Count = 1,
                 ProductId = productId,
-                Product = _unitOfWOrk.Product.GetFirstOrDefault(u => u.Id == productId, includeProperties: "Category,CoverType"),
+                Product = _unitOfWork.Product.GetFirstOrDefault(u => u.Id == productId, includeProperties: "Category,CoverType"),
             };
 
             return View(cartObj);
@@ -47,8 +47,14 @@ namespace BulkyBookWeb.Controllers
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
             shoppingCart.ApplicationUserId = claim.Value;
 
-            _unitOfWOrk.ShoppingCart.Add(shoppingCart);
-            _unitOfWOrk.Save();
+            ShoppingCart cartFromDb = _unitOfWork.ShoppingCart.GetFirstOrDefault(
+                u => u.ApplicationUserId == claim.Value && u.ProductId == shoppingCart.ProductId);
+
+            if (cartFromDb == null)
+                _unitOfWork.ShoppingCart.Add(shoppingCart);
+            else
+                _unitOfWork.ShoppingCart.IncrementCount(cartFromDb, shoppingCart.Count);
+            _unitOfWork.Save();
 
             return RedirectToAction(nameof(Index));
         }
